@@ -18,26 +18,29 @@ class User {
   User(this.status, this.accessToken, this.address, this.privateKey, this.place);
 }
 
-void CheckInOut(addrToken) async {
+Future<String> CheckInOut(accessToken, addrToken) async {
   Map<String, dynamic> jsonValue = jsonDecode(addrToken);
   Map<String, dynamic> payload = Jwt.parseJwt(jsonValue['nftToken']);
   print("jwt값 ");
   print(payload);
   if(Jwt.isExpired(jsonValue['nftToken']) == true) {
     // 기간 만료
-    print("기간 만료");
+    return "기간 만료";
   }
 
-  var checkUrl = Uri.parse('http://3.39.24.209/check');
-  var response = await http.post(checkUrl, body: jsonValue);
+  var checkUrl = Uri.parse('http://localhost:3000/check');
+  var response = await http.post(checkUrl, body: jsonValue, headers: {
+    'Authorization': 'Bearer $accessToken',
+  });
   Map<String, dynamic> body = jsonDecode(response.body);
 
   if(response.statusCode == 201) {
     print(body["status"]); // "checkin" or "checkout"
     print(body["place"]);
+    return "[ " + body["place"] + " ] " + body["status"];
   } // TODO: 해당 API JWTAuthGuard 넣기
   else {
-    print("인증 실패");
+    return "인증 실패";
   }
 }
 
@@ -179,6 +182,22 @@ class _QRViewState extends State<CheckInOutQRView> {
     controller!.resumeCamera();
   }
 
+  void Toast(content) {
+    final snackBar = SnackBar(
+      content: Text(content),
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () {
+          // Some code to undo the change.
+        },
+      ),
+    );
+
+    // Find the ScaffoldMessenger in the widget tree
+    // and use it to show a SnackBar.
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -238,7 +257,8 @@ class _QRViewState extends State<CheckInOutQRView> {
                         margin: const EdgeInsets.all(8),
                         child: ElevatedButton(
                             onPressed: () async {
-                              CheckInOut('{"address":"0x5530580E722f5dDEeeFb34b45fA8c5cb382dD789","nftToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGFjZSI6IkVORlQg7Zes7Iqk7J6lIiwic3RhcnRfZGF0ZSI6IjIwMjItMDQtMTIiLCJlbmRfZGF0ZSI6IjIwMjItMDUtMTIiLCJpYXQiOjE2NDk3NTQxMzIsImV4cCI6MTY1MjM0NjEzMn0.KDMvs0EKAuTJX2K3WI_1hh6b5JSu_blSrFaYgfnzQo4"}');
+                              final result = await CheckInOut(widget.user.accessToken, '{"address":"0x5530580E722f5dDEeeFb34b45fA8c5cb382dD789","nftToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGFjZSI6IkVORlQg7Zes7Iqk7J6lIiwic3RhcnRfZGF0ZSI6IjIwMjItMDQtMTIiLCJlbmRfZGF0ZSI6IjIwMjItMDUtMTIiLCJpYXQiOjE2NDk3NTQxMzIsImV4cCI6MTY1MjM0NjEzMn0.KDMvs0EKAuTJX2K3WI_1hh6b5JSu_blSrFaYgfnzQo4"}');
+                              Toast(result);
                             },
                             child: FutureBuilder(
                               builder: (context, snapshot) {
