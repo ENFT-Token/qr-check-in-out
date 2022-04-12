@@ -5,13 +5,69 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-void main() => runApp(const MaterialApp(home: CheckInOutQRView()));
+void main() => runApp(const MaterialApp(home: LoginPage()));
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.symmetric(horizontal: 24.0),
+          children: <Widget>[
+            SizedBox(height: 80.0),
+
+            SizedBox(height: 120.0),
+            TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(
+                filled: true,
+                labelText: 'Username',
+              ),
+            ),
+            SizedBox(height: 12.0),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                filled: true,
+                labelText: 'Password',
+              ),
+              obscureText: true,
+            ),
+            ButtonBar(
+              children: <Widget>[
+                RaisedButton(
+                  child: Text('LOGIN'),
+                  onPressed: () {
+                    print(_usernameController.text);
+                    print( _passwordController.text);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CheckInOutQRView()));
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class CheckInOutQRView extends StatefulWidget {
-const CheckInOutQRView({Key? key}) : super(key: key);
+  const CheckInOutQRView({Key? key}) : super(key: key);
 
-@override
-State<StatefulWidget> createState() => _QRViewState();
+  @override
+  State<StatefulWidget> createState() => _QRViewState();
 }
 
 class _QRViewState extends State<CheckInOutQRView> {
@@ -99,7 +155,7 @@ class _QRViewState extends State<CheckInOutQRView> {
   Widget _buildQrView(BuildContext context) {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
-        MediaQuery.of(context).size.height < 400)
+            MediaQuery.of(context).size.height < 400)
         ? 150.0
         : 300.0;
     // To ensure the Scanner view is properly sizes after rotation
