@@ -1,9 +1,56 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:http/http.dart' as http;
+import 'package:jwt_decode/jwt_decode.dart';
+
+
+class User {
+  int status;
+  String accessToken;
+  String address;
+  String privateKey;
+  String place;
+  User(this.status, this.accessToken, this.address, this.privateKey, this.place);
+}
+
+void CheckInOut(addrToken) async {
+  Map<String, dynamic> jsonValue = jsonDecode(addrToken);
+  Map<String, dynamic> payload = Jwt.parseJwt(jsonValue['nftToken']);
+  print("jwt값 ");
+  print(payload);
+  if(Jwt.isExpired(jsonValue['nftToken']) == true) {
+    // 기간 만료
+    print("기간 만료");
+  }
+
+  var checkUrl = Uri.parse('http://3.39.24.209/check');
+  var response = await http.post(checkUrl, body: jsonValue);
+  Map<String, dynamic> body = jsonDecode(response.body);
+
+  if(response.statusCode == 201) {
+    print(body["status"]); // "checkin" or "checkout"
+    print(body["place"]);
+  } // TODO: 해당 API JWTAuthGuard 넣기
+  else {
+    print("인증 실패");
+  }
+}
+
+Future<User> Login(id, pw) async {
+  var loginUrl = Uri.parse('http://3.39.24.209/auth/admin/login');
+  var response = await http.post(loginUrl, body: {'email': id, 'password': pw});
+  if(response.statusCode == 201) {
+    final body = jsonDecode(response.body);
+    return User(response.statusCode, body['access_token'], body['address'],body['privateKey'],body['place']);
+  }
+  return User(response.statusCode ,"", "", "", "");
+}
+
 
 void main() => runApp(const MaterialApp(home: LoginPage()));
 
@@ -48,10 +95,16 @@ class _LoginPageState extends State<LoginPage> {
               children: <Widget>[
                 RaisedButton(
                   child: Text('LOGIN'),
-                  onPressed: () {
+                  onPressed: () async {
                     print(_usernameController.text);
                     print( _passwordController.text);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => CheckInOutQRView()));
+                    final user = await Login(_usernameController.text, _passwordController.text);
+                    if(user.status != 201)
+                      FlutterDialog("안내","로그인 실패");
+                    else {
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => CheckInOutQRView(user: user)));
+                    }
                   },
                 ),
               ],
@@ -61,10 +114,50 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+
+  void FlutterDialog(title,content) {
+    showDialog(
+        context: context,
+        //barrierDismissible - Dialog를 제외한 다른 화면 터치 x
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            // RoundedRectangleBorder - Dialog 화면 모서리 둥글게 조절
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
+            //Dialog Main Title
+            title: Column(
+              children: <Widget>[
+                new Text(title),
+              ],
+            ),
+            //
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  content,
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                child: new Text("확인"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
 }
 
 class CheckInOutQRView extends StatefulWidget {
-  const CheckInOutQRView({Key? key}) : super(key: key);
+  final User user;
+  const CheckInOutQRView({Key ?key, required this.user}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _QRViewState();
@@ -103,7 +196,7 @@ class _QRViewState extends State<CheckInOutQRView> {
                     Text(
                         'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
                   else
-                    const Text('Scan a code'),
+                    Text(widget.user.accessToken),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -138,6 +231,18 @@ class _QRViewState extends State<CheckInOutQRView> {
                                 } else {
                                   return const Text('loading');
                                 }
+                              },
+                            )),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.all(8),
+                        child: ElevatedButton(
+                            onPressed: () async {
+                              CheckInOut('{"address":"0x5530580E722f5dDEeeFb34b45fA8c5cb382dD789","nftToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGFjZSI6IkVORlQg7Zes7Iqk7J6lIiwic3RhcnRfZGF0ZSI6IjIwMjItMDQtMTIiLCJlbmRfZGF0ZSI6IjIwMjItMDUtMTIiLCJpYXQiOjE2NDk3NTQxMzIsImV4cCI6MTY1MjM0NjEzMn0.KDMvs0EKAuTJX2K3WI_1hh6b5JSu_blSrFaYgfnzQo4"}');
+                            },
+                            child: FutureBuilder(
+                              builder: (context, snapshot) {
+                                  return Text('TEST CHECKOUT');
                               },
                             )),
                       )
