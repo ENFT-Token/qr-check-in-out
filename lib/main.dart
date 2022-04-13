@@ -20,6 +20,9 @@ class User {
 
 Future<String> CheckInOut(User user, addrToken) async {
   Map<String, dynamic> jsonValue = jsonDecode(addrToken);
+  if(!jsonValue.containsKey('address') || !jsonValue.containsKey('nftToken')) {
+    return "Invalid NFT Token: 올바르지 않은 QR 형식입니다.";
+  }
   Map<String, dynamic> payload = Jwt.parseJwt(jsonValue['nftToken']);
   print("jwt값 ");
   print(user.place);
@@ -306,7 +309,10 @@ class _QRViewState extends State<CheckInOutQRView> {
     setState(() {
       this.controller = controller;
     });
-    controller.scannedDataStream.listen((scanData) {
+    controller.scannedDataStream.listen((scanData) async {
+      final checkResult = await CheckInOut(widget.user, scanData);
+      Toast(checkResult);
+
       setState(() {
         result = scanData;
       });
