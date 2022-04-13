@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -17,8 +18,10 @@ class User {
   String place;
   User(this.status, this.accessToken, this.address, this.privateKey, this.place);
 }
+AudioCache audioPlayer = AudioCache();
 
 Future<String> CheckInOut(User user, addrToken) async {
+
   try {
     Map<String, dynamic> jsonValue = jsonDecode(addrToken);
     if (!jsonValue.containsKey('address') ||
@@ -46,6 +49,7 @@ Future<String> CheckInOut(User user, addrToken) async {
     });
     Map<String, dynamic> body = jsonDecode(response.body);
     if(response.statusCode == 201) {
+      audioPlayer.play(body["status"] + ".mp3");
       print(body["status"]); // "checkin" or "checkout"
       print(body["place"]);
       return "[ " + body["place"] + " ] " + body["status"];

@@ -37,6 +37,7 @@ dependencies:
   qr_code_scanner: ^0.7.0
   http: ^0.13.4
   jwt_decode: ^0.3.1
+  audioplayers: ^0.20.1
 
 dev_dependencies:
   flutter_test:
@@ -54,7 +55,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-
+  assets:
+    - assets/checkin.mp3
+    - assets/checkout.mp3
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
