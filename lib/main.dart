@@ -25,11 +25,11 @@ Future<String> CheckInOut(User user, addrToken) async {
   print(user.place);
   print(payload['place']);
   if(user.place != payload['place']) {
-    return "사용하고자 하는 장소가 다릅니다.";
+    return "Invalid NFT Token: 이용권의 위치와 사용하려는 위치가 일치하지 않습니다.";
   }
   if(Jwt.isExpired(jsonValue['nftToken']) == true) {
     // 기간 만료
-    return "기간 만료";
+    return "Invalid NFT Token: 기간 만료";
   }
 
   var checkUrl = Uri.parse('http://3.39.24.209/check');
@@ -44,7 +44,7 @@ Future<String> CheckInOut(User user, addrToken) async {
     return "[ " + body["place"] + " ] " + body["status"];
   }
   else {
-    return "인증 실패";
+    return "Invalid NFT Token: 인증 실패";
   }
 }
 
@@ -261,7 +261,7 @@ class _QRViewState extends State<CheckInOutQRView> {
                         margin: const EdgeInsets.all(8),
                         child: ElevatedButton(
                             onPressed: () async {
-                              final result = await CheckInOut(widget.user.accessToken, '{"address":"0x5530580E722f5dDEeeFb34b45fA8c5cb382dD789","nftToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGFjZSI6IkVORlQg7Zes7Iqk7J6lIiwic3RhcnRfZGF0ZSI6IjIwMjItMDQtMTIiLCJlbmRfZGF0ZSI6IjIwMjItMDUtMTIiLCJpYXQiOjE2NDk3NTQxMzIsImV4cCI6MTY1MjM0NjEzMn0.KDMvs0EKAuTJX2K3WI_1hh6b5JSu_blSrFaYgfnzQo4"}');
+                              final result = await CheckInOut(widget.user, '{"address":"0x5530580E722f5dDEeeFb34b45fA8c5cb382dD789","nftToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGFjZSI6IkVORlQg7Zes7Iqk7J6lIiwic3RhcnRfZGF0ZSI6IjIwMjItMDQtMTIiLCJlbmRfZGF0ZSI6IjIwMjItMDUtMTIiLCJpYXQiOjE2NDk3NTQxMzIsImV4cCI6MTY1MjM0NjEzMn0.KDMvs0EKAuTJX2K3WI_1hh6b5JSu_blSrFaYgfnzQo4"}');
                               Toast(result);
                             },
                             child: FutureBuilder(
