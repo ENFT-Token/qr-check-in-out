@@ -23,9 +23,8 @@ Future<String> CheckInOut(User user, addrToken) async {
     Map<String, dynamic> jsonValue = jsonDecode(addrToken);
     if (!jsonValue.containsKey('address') ||
         !jsonValue.containsKey('nftToken')) {
-      return "Invalid NFT Token: 올바르지 않은 QR 형식입니다.";
+      throw "Invalid NFT Token: 올바르지 않은 QR 형식입니다.";
     }
-
     Map<String, dynamic> payload = Jwt.parseJwt(jsonValue['nftToken']);
 
     print("jwt값 ");
@@ -39,17 +38,20 @@ Future<String> CheckInOut(User user, addrToken) async {
       throw "Invalid NFT Token: 기간 만료";
     }
     var checkUrl = Uri.parse('http://3.39.24.209/check');
-    var response = await http.post(checkUrl, body: jsonValue, headers: {
-      'Authorization': 'Bearer $user.accessToken',
+    var response = await http.post(checkUrl, body: {
+      'address': jsonValue['address'],
+      'nftToken': jsonValue['nftToken'],
+    }, headers: {
+      'Authorization': 'Bearer ' + user.accessToken,
     });
     Map<String, dynamic> body = jsonDecode(response.body);
-
     if(response.statusCode == 201) {
       print(body["status"]); // "checkin" or "checkout"
       print(body["place"]);
       return "[ " + body["place"] + " ] " + body["status"];
     }
     else {
+      print(body);
       throw "Invalid NFT Token: 인증 실패";
     }
   }
@@ -319,6 +321,7 @@ class _QRViewState extends State<CheckInOutQRView> {
     });
     controller.scannedDataStream.listen((scanData) async {
       if(scanData.code != null) {
+        print(scanData.code);
         final checkResult = await CheckInOut(widget.user, scanData.code);
         Toast(checkResult);
       }
