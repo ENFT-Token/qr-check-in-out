@@ -314,7 +314,7 @@ class _QRViewState extends State<CheckInOutQRView> {
           borderRadius: 10,
           borderLength: 30,
           borderWidth: 10,
-          cutOutSize: scanArea),
+          cutOutSize: 500),
       onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
     );
   }
