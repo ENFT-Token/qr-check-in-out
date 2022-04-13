@@ -18,11 +18,15 @@ class User {
   User(this.status, this.accessToken, this.address, this.privateKey, this.place);
 }
 
-Future<String> CheckInOut(accessToken, addrToken) async {
+Future<String> CheckInOut(User user, addrToken) async {
   Map<String, dynamic> jsonValue = jsonDecode(addrToken);
   Map<String, dynamic> payload = Jwt.parseJwt(jsonValue['nftToken']);
   print("jwt값 ");
-  print(payload);
+  print(user.place);
+  print(payload['place']);
+  if(user.place != payload['place']) {
+    return "사용하고자 하는 장소가 다릅니다.";
+  }
   if(Jwt.isExpired(jsonValue['nftToken']) == true) {
     // 기간 만료
     return "기간 만료";
@@ -30,7 +34,7 @@ Future<String> CheckInOut(accessToken, addrToken) async {
 
   var checkUrl = Uri.parse('http://3.39.24.209/check');
   var response = await http.post(checkUrl, body: jsonValue, headers: {
-    'Authorization': 'Bearer $accessToken',
+    'Authorization': 'Bearer $user.accessToken',
   });
   Map<String, dynamic> body = jsonDecode(response.body);
 
