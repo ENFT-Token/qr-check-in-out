@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -191,7 +192,7 @@ class _QRViewState extends State<CheckInOutQRView> {
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-
+  bool scanAllow = true;
   // In order to get hot reload to work we need to pause the camera if the platform
   // is android, or resume the camera if the platform is iOS.
   @override
@@ -324,7 +325,11 @@ class _QRViewState extends State<CheckInOutQRView> {
       this.controller = controller;
     });
     controller.scannedDataStream.listen((scanData) async {
-      if(scanData.code != null) {
+      if(scanAllow == true && scanData.code != null) {
+        scanAllow = false;
+        Timer(Duration(seconds: 5), () {
+          scanAllow = true;
+        });
         print(scanData.code);
         final checkResult = await CheckInOut(widget.user, scanData.code);
         Toast(checkResult);
