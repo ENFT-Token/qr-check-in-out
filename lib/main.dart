@@ -57,7 +57,7 @@ Future<String> CheckInOut(User user, addrToken) async {
     }
     else {
       print(body);
-      throw "Invalid NFT Token: 인증 실패";
+      throw "Invalid NFT Token: 유효하지 않은 티켓입니다.";
     }
   }
   catch(e) {
@@ -319,6 +319,7 @@ class _QRViewState extends State<CheckInOutQRView> {
       onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
     );
   }
+
 
   void _onQRViewCreated(QRViewController controller) {
     setState(() {
