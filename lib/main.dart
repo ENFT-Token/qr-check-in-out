@@ -28,7 +28,7 @@ Future<String> CheckInOut(accessToken, addrToken) async {
     return "기간 만료";
   }
 
-  var checkUrl = Uri.parse('http://localhost:3000/check');
+  var checkUrl = Uri.parse('http://3.39.24.209/check');
   var response = await http.post(checkUrl, body: jsonValue, headers: {
     'Authorization': 'Bearer $accessToken',
   });
@@ -38,7 +38,7 @@ Future<String> CheckInOut(accessToken, addrToken) async {
     print(body["status"]); // "checkin" or "checkout"
     print(body["place"]);
     return "[ " + body["place"] + " ] " + body["status"];
-  } // TODO: 해당 API JWTAuthGuard 넣기
+  }
   else {
     return "인증 실패";
   }
