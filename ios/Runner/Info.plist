@@ -47,5 +47,25 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+    	<array>
+    		<string>kakao29c4a618bd4a58d8242fbb9bdb009ae5</string>
+    		<string>kakaolink</string>
+    	</array>
+    	<key>FlutterDeepLinkingEnabled</key>
+    	<true/>
+    	<key>CFBundleURLTypes</key>
+    	<array>
+    		<dict>
+    			<key>CFBundleTypeRole</key>
+    			<string>Editor</string>
+    			<key>CFBundleURLName</key>
+    			<string></string>
+    			<key>CFBundleURLSchemes</key>
+    			<array>
+    				<string>kakaotalk</string>
+    			</array>
+    		</dict>
+    	</array>
 </dict>
 </plist>
