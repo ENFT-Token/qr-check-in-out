@@ -27,11 +27,13 @@ AudioCache audioPlayer = AudioCache();
 
 Future<String> CheckInOut(User user, addrToken) async {
   try {
+    print(addrToken);
     if (Jwt.isExpired(addrToken) == true) {
       // 기간 만료
       throw "Invalid NFT Token: 30초가 지난 티켓입니다.";
     }
     Map<String, dynamic> jsonValue = Jwt.parseJwt(addrToken);
+    print(jsonValue);
     if (!jsonValue.containsKey('address') ||
         !jsonValue.containsKey('nftToken')) {
       throw "Invalid NFT Token: 올바르지 않은 QR 형식입니다.";
@@ -47,7 +49,7 @@ Future<String> CheckInOut(User user, addrToken) async {
       // 기간 만료
       throw "Invalid NFT Token: 기간 만료";
     }
-    var checkUrl = Uri.parse('http://3.39.24.209/check');
+    var checkUrl = Uri.parse('http://13.209.200.101/check');
     var response = await http.post(checkUrl, body: {
       'address': jsonValue['address'],
       'nftToken': jsonValue['nftToken'],
