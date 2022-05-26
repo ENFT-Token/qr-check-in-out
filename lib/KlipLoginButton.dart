@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'constant.dart';
 
 class KlipLoginButton extends StatelessWidget {
   final Function() onPressed;
@@ -29,7 +29,7 @@ class KlipLoginButton extends StatelessWidget {
                     Container(
                         margin: const EdgeInsets.all(kDefaultPadding / 2),
                         child: SvgPicture.asset(
-                          'assets/logos/klip_logo.svg',
+                          'assets/logo/klip_logo.svg',
                           height: 18.0,
                           fit: BoxFit.fitWidth,
                         )),

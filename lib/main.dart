@@ -10,28 +10,34 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decode/jwt_decode.dart';
 
+import 'KlipApi.dart';
+import 'KlipLoginButton.dart';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 class User {
   int status;
   String accessToken;
   String address;
-  String privateKey;
   String place;
-  User(this.status, this.accessToken, this.address, this.privateKey, this.place);
+  User(this.status, this.accessToken, this.address, this.place);
 }
 AudioCache audioPlayer = AudioCache();
 
 Future<String> CheckInOut(User user, addrToken) async {
-
   try {
-    Map<String, dynamic> jsonValue = jsonDecode(addrToken);
+    if (Jwt.isExpired(addrToken) == true) {
+      // 기간 만료
+      throw "Invalid NFT Token: 30초가 지난 티켓입니다.";
+    }
+    Map<String, dynamic> jsonValue = Jwt.parseJwt(addrToken);
     if (!jsonValue.containsKey('address') ||
         !jsonValue.containsKey('nftToken')) {
       throw "Invalid NFT Token: 올바르지 않은 QR 형식입니다.";
     }
     Map<String, dynamic> payload = Jwt.parseJwt(jsonValue['nftToken']);
 
-    print("jwt값 ");
     print(user.place);
     print(payload['place']);
     if (user.place != payload['place']) {
@@ -66,18 +72,22 @@ Future<String> CheckInOut(User user, addrToken) async {
 
 }
 
-Future<User> Login(id, pw) async {
-  var loginUrl = Uri.parse('http://3.39.24.209/auth/admin/login');
-  var response = await http.post(loginUrl, body: {'email': id, 'password': pw});
+Future<User> Login(address) async {
+  var loginUrl = Uri.parse('http://13.209.200.101/auth/admin/login');
+  var response = await http.post(loginUrl, body: {'address': address});
+  print(response.body);
   if(response.statusCode == 201) {
     final body = jsonDecode(response.body);
-    return User(response.statusCode, body['access_token'], body['address'],body['privateKey'],body['place']);
+    return User(response.statusCode, body['access_token'], body['address'],body['place']);
   }
-  return User(response.statusCode ,"", "", "", "");
+  return User(response.statusCode , "", "", "");
 }
 
 
-void main() => runApp(const MaterialApp(home: LoginPage()));
+void main() async {
+  await dotenv.load(fileName: '.env');
+  runApp(const MaterialApp(home: LoginPage()));
+}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -94,45 +104,42 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 24.0),
-          children: <Widget>[
-            SizedBox(height: 80.0),
-
-            SizedBox(height: 120.0),
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                filled: true,
-                labelText: 'Username',
-              ),
-            ),
-            SizedBox(height: 12.0),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                filled: true,
-                labelText: 'Password',
-              ),
-              obscureText: true,
-            ),
-            ButtonBar(
-              children: <Widget>[
-                RaisedButton(
-                  child: Text('LOGIN'),
-                  onPressed: () async {
-                    print(_usernameController.text);
-                    print( _passwordController.text);
-                    final user = await Login(_usernameController.text, _passwordController.text);
-                    if(user.status != 201)
-                      FlutterDialog("안내","로그인 실패");
-                    else {
-                      Navigator.push(context, MaterialPageRoute(
-                          builder: (context) => CheckInOutQRView(user: user)));
-                    }
-                  },
-                ),
-              ],
+        child: Column(
+            mainAxisAlignment:MainAxisAlignment.spaceAround,
+            children: <Widget>[
+            KlipLoginButton(
+              onPressed: () async {
+                final klipApi = KlipAPi();
+                await klipApi.prepareRequestKey();
+                await klipApi.createUriLaunch();
+                int i = 0;
+                String address = "";
+                await Future.doWhile(() async {
+                  i++;
+                  await Future.delayed(const Duration(seconds: 3));
+                  final result = await klipApi.getKlipAddress();
+                  if (result['status'] == "success") {
+                    address = result['address'];
+                    return false;
+                  }
+                  if (i == 10) {
+                    return false;
+                  }
+                  return true;
+                });
+                if (address != "") {
+                  print(address);
+                  final user = await Login(address);
+                  if(user.status != 201)
+                    FlutterDialog("안내","로그인 실패");
+                  else {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context) => CheckInOutQRView(user: user)));
+                  }
+                } else {
+                  FlutterDialog("안내","클립 연결 실패");
+                }
+              },
             ),
           ],
         ),
@@ -206,7 +213,11 @@ class _QRViewState extends State<CheckInOutQRView> {
 
   void Toast(content) {
     final snackBar = SnackBar(
-      content: Text(content),
+
+      content: Container(
+        height: 20,
+        child: Text(content),
+      ),
       action: SnackBarAction(
         label: 'Undo',
         onPressed: () {
