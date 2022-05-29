@@ -38,6 +38,9 @@ Future<String> CheckInOut(User user, addrToken) async {
         !jsonValue.containsKey('nftToken')) {
       throw "Invalid NFT Token: 올바르지 않은 QR 형식입니다.";
     }
+
+
+    print("hh ${jsonValue['nftToken']}");
     Map<String, dynamic> payload = Jwt.parseJwt(jsonValue['nftToken']);
 
     print(user.place);
@@ -49,7 +52,7 @@ Future<String> CheckInOut(User user, addrToken) async {
       // 기간 만료
       throw "Invalid NFT Token: 기간 만료";
     }
-    var checkUrl = Uri.parse('http://13.209.200.101/check');
+    var checkUrl = Uri.parse('http://13.209.200.101:3000/check');
     var response = await http.post(checkUrl, body: {
       'address': jsonValue['address'],
       'nftToken': jsonValue['nftToken'],
@@ -75,7 +78,7 @@ Future<String> CheckInOut(User user, addrToken) async {
 }
 
 Future<User> Login(address) async {
-  var loginUrl = Uri.parse('http://13.209.200.101/auth/admin/login');
+  var loginUrl = Uri.parse('http://13.209.200.101:3000/auth/admin/login');
   var response = await http.post(loginUrl, body: {'address': address});
   print(response.body);
   if(response.statusCode == 201) {
