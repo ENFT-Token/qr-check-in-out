@@ -10,6 +10,7 @@ import 'package:qr_checkinout/constant.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decode/jwt_decode.dart';
+import 'package:lottie/lottie.dart';
 
 import 'KlipApi.dart';
 import 'KlipLoginButton.dart';
@@ -109,10 +110,26 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: SafeArea(
           child: Padding(
-        padding: const EdgeInsets.all(kDefaultPadding * 3),
+        padding: const EdgeInsets.all(kDefaultPadding * 2),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
+            Lottie.asset('assets/logo/running.json'),
+            Expanded(
+                child: Center(
+                    child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "ENFT 관리자 어플리케이션",
+                  style: TextStyle(fontSize: 24),
+                ),
+                Text(
+                  "\nQR 코드로 출입을 관리하세요!",
+                  style: TextStyle(fontSize: 24),
+                ),
+              ],
+            ))),
             KlipLoginButton(
               onPressed: () async {
                 final klipApi = KlipAPi();
@@ -234,8 +251,9 @@ class _QRViewState extends State<CheckInOutQRView> {
             child: RichText(
                 text: TextSpan(
                     text: content,
-                    style:
-                        TextStyle(color: isError ? Colors.white : Colors.red, fontSize: 20))),
+                    style: TextStyle(
+                        color: isError ? Colors.white : Colors.red,
+                        fontSize: 20))),
           )),
     );
 
